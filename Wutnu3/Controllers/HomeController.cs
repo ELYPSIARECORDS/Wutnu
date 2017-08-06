@@ -28,6 +28,24 @@ namespace Wutnu.Controllers
             {
                 ViewBag.Error = Request.Cookies["Error"].Value;
             }
+            return CheckForReturn();
+        }
+
+        private ActionResult CheckForReturn()
+        {
+            if (Request.UrlReferrer == null)
+                return View();
+
+            var profile = HttpUtility.ParseQueryString(Request.UrlReferrer.Query)["p"];
+            if (profile != null)
+            {
+                profile = profile.ToLower();
+
+                if (profile==Startup.ResetPolicyId.ToLower() || profile == Startup.ProfilePolicyId.ToLower())
+                {
+                    return RedirectToAction("Index", "Profile", new { area = "Manage" });
+                }
+            }
             return View();
         }
 
@@ -109,13 +127,19 @@ namespace Wutnu.Controllers
 
         private WutLinkPoco GenToken(WutLinkPoco res)
         {
-            var uri = new Uri(res.RealUrl);
-            var containerName = uri.Segments[1];
-            containerName = containerName.Substring(0, containerName.Length - 1);
-
+            var containerName = GetContainerFromUri(res.RealUrl);
             var container = WutStorage.GetContainer(containerName);
             res.RealUrl = WutStorage.GetBlobReadTokenUri(container, System.IO.Path.GetFileName(res.RealUrl));
             return res;
+        }
+
+        private string GetContainerFromUri(string realUrl)
+        {
+            var uri = new Uri(realUrl);
+            int segment = (realUrl.IndexOf("devstoreaccount")>-1) ? 2 : 1;
+            var containerName = uri.Segments[segment];
+            containerName = containerName.Substring(0, containerName.Length - 1);
+            return containerName;
         }
 
         private ActionResult LogAndRedir(WutLinkPoco res, int? userId=null)
@@ -143,7 +167,7 @@ namespace Wutnu.Controllers
 
         public ActionResult About()
         {
-            ViewBag.Message = "When you look at that freaky long URL and go, \"Wut?\".";
+            ViewBag.Message = "Mother of All Azure Demos (MOAAD)";
 
             return View();
         }

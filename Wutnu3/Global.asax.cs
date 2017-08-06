@@ -21,15 +21,18 @@ using Wutnu.Common;
 using Wutnu.Repo;
 using Wutnu.Infrastructure.Filters;
 using Wutnu.Web.api;
+using Wutnu.Web.Infrastructure;
 
 namespace Wutnu
 {
     public class MvcApplication : HttpApplication
     {
-        protected async void Application_Start()
+        protected void Application_Start()
         {
             try
             {
+                SqlServerTypes.Utilities.LoadNativeAssemblies(Server.MapPath("~/bin"));
+
                 //Registration
                 ControllerBuilder.Current.DefaultNamespaces.Add("Wutnu.Controllers");
                 AreaRegistration.RegisterAllAreas();
@@ -39,6 +42,10 @@ namespace Wutnu
                 RouteConfig.RegisterRoutes(RouteTable.Routes);
                 BundleConfig.RegisterBundles(BundleTable.Bundles);
                 AntiForgeryConfig.UniqueClaimTypeIdentifier = CustomClaimTypes.ObjectIdentifier;
+
+                Cache.RedisConnectionString = ConfigurationManager.AppSettings["RedisConnection"];
+                Cache.RedisUrlDBNum = Convert.ToInt32(ConfigurationManager.AppSettings["RedisUrlDBNum"]);
+                Cache.RedisUserDBNum = Convert.ToInt32(ConfigurationManager.AppSettings["RedisUserDBNum"]);
 
                 //IoC
                 var builder = new ContainerBuilder();
@@ -58,6 +65,8 @@ namespace Wutnu
 
                 //Settings
                 Settings.Setup(ConfigurationManager.AppSettings);
+                var domainName = ConfigurationManager.AppSettings["ida:RedirectUri"] + "/";
+                Startup.RedirectUri = domainName;
 
                 WutStorage.ALLOWED_CORS_ORIGINS = new List<string> { ConfigurationManager.AppSettings["ida:RedirectUri"] };
 
@@ -70,15 +79,17 @@ namespace Wutnu
                 }
 
                 Utils.ApplicationName = "Wut?";
-                Cache.RedisConnectionString = ConfigurationManager.AppSettings["RedisConnection"];
-                Cache.RedisUrlDBNum = Convert.ToInt32(ConfigurationManager.AppSettings["RedisUrlDBNum"]);
-                Cache.RedisUserDBNum = Convert.ToInt32(ConfigurationManager.AppSettings["RedisUserDBNum"]);
 
                 AADGraph.GraphToken = ConfigurationManager.AppSettings["B2BGraphKey"];
                 AADGraph.ClientId = ConfigurationManager.AppSettings["ida:ClientIdB2B"];
                 AADGraph.TenantName = ConfigurationManager.AppSettings["ida:TenantB2B"];
-                AADGraph.TenantId = ConfigurationManager.AppSettings["ida:TenantIdB2B"];
                 AADGraph.LoadGroups();
+
+                //BlobCopy zip init
+                BlobCopyZip.InitZip(Settings.AppRootPath);
+
+                //Ensure cloud reports have initialized in blob storage
+                ReportManager.InitBlobReports();
 
                 //VPP
                 System.Web.Hosting.HostingEnvironment.RegisterVirtualPathProvider(new WutVirtualPathProvider());

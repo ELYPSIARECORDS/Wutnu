@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
+using System.Configuration;
 
 namespace BlobCopy
 {
@@ -17,8 +18,9 @@ namespace BlobCopy
                 Info();
                 return;
             }
-            var settings = Properties.Settings.Default;
-            using (var blob = new BlobUtil(settings.ApiKey, settings.ApiUrl, Environment.CurrentDirectory))
+            var apiKey = ConfigurationManager.AppSettings["apiKey"];
+            var apiUrl = ConfigurationManager.AppSettings["apiUrl"];
+            using (var blob = new BlobUtil(apiKey, apiUrl, Environment.CurrentDirectory))
             {
                 blob.FileChanged += Blob_FileChanged;
                 var value = "";
@@ -94,6 +96,12 @@ namespace BlobCopy
                 Length = "Length"
             }));
             Console.WriteLine(new String('-', 90));
+            if (data.Count() == 0)
+            {
+                Console.WriteLine("No files found");
+                return;
+            }
+
             foreach (var item in data)
             {
                 Console.WriteLine(GetFileLineItem(item));
@@ -156,7 +164,7 @@ namespace BlobCopy
             Console.WriteLine("This utility fetches a SAS token with authorization to upload, list, and download files from");
             Console.WriteLine("an assigned container in Azure Blob Storage.");
             Console.WriteLine("");
-            Console.WriteLine("SETTINGS (in App.config)");
+            Console.WriteLine("SETTINGS (in api.config)");
             Console.WriteLine("   ApiUrl: the server URL used by the utility to retrieve authorization tokens.");
             Console.WriteLine("   ApiKey: the key used by the utility to authenticate calls to retrieve auth tokens.");
             Console.WriteLine("");
