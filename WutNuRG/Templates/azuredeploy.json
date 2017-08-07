@@ -48,21 +48,21 @@
       "type": "string",
       "defaultValue": "B2C_1_SignInSignUpPolicy",
       "metadata": {
-        "description": "The sign up sign in policy name for your B2C application in Azure AD (see docs)"
+        "description": "The sign up sign in policy for your B2C application in Azure AD (see docs)"
       }
     },
     "ida:UserProfilePolicyId": {
       "type": "string",
       "defaultValue": "B2C_1_DefaultProfileEditPolicy",
       "metadata": {
-        "description": "The user profile policy name for your B2C application in Azure AD (see docs)"
+        "description": "The user profile policy for your B2C application in Azure AD (see docs)"
       }
     },
-    "ida:ResetProfilePolicyId": {
+    "ida:ResetPwPolicyId": {
       "type": "string",
       "defaultValue": "B2C_1_DefaultReset",
       "metadata": {
-        "description": "The user profile policy name for your B2C application in Azure AD (see docs)"
+        "description": "The password reset profile policy for your B2C application in Azure AD (see docs)"
       }
     },
     "redisSKUName": {
@@ -196,7 +196,7 @@
             "ida:ClientIdB2B": "[parameters('ClientIdB2B')]",
             "ida:TenantB2C": "[parameters('TenantB2C')]",
             "ida:ClientIdB2C": "[parameters('ClientIdB2C')]",
-            "ida:ResetPolicyId": "[parameters('ida:ResetProfilePolicyId')]",
+            "ida:ResetPolicyId": "[parameters('ida:ResetPwPolicyId')]",
             "ida:SUSIPolicyId": "[parameters('ida:SUSIPolicyId')]",
             "ida:UserProfilePolicyId": "[parameters('ida:UserProfilePolicyId')]",
             "ConfigStorageCors": "true",
